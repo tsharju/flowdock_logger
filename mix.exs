@@ -12,7 +12,7 @@ defmodule FlowdockLogger.Mixfile do
   #
   # Type `mix help compile.app` for more information
   def application do
-    [applications: [:logger, :hackney]]
+    [applications: [:hackney, :logger]]
   end
 
   # Dependencies can be Hex packages:
