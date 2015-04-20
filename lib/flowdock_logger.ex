@@ -35,25 +35,33 @@ defmodule Logger.Backends.Flowdock do
     metadata = Keyword.get(env, :metadata, [])
 
     api_token = Keyword.get(env, :api_token)
+    source = Keyword.get(env, :source)
+    from_address = Keyword.get(env, :from_address)
+    subject = Keyword.get(env, :subject)
+    from_name = Keyword.get(env, :from_name, Node.self)
+    project = Keyword.get(env, :project)
+    tags = Keyword.get(env, :tags)
     
-    %{format: format, level: level, metadata: metadata, api_token: api_token}
+    %{format: format, level: level, metadata: metadata, api_token: api_token,
+      source: source, subject: subject, from_name: from_name, project: project,
+      tags: tags, from_address: from_address}
   end
   
   defp log_event(level, msg, ts, md, %{format: format, metadata: metadata} = state) do
     ansidata = Logger.Formatter.format(format, level, msg, ts, Dict.take(md, metadata))
-
+    
     url = "https://api.flowdock.com/v1/messages/team_inbox/#{state.api_token}"
     headers = [{"Content-Type",  "application/json"}]
     
     payload = ~s(
     {
-      "source": "Spells Server",
-      "from_address": "servers@ministryofgames.io",
-      "subject": "Server Event",
+      "source": "#{state.source}",
+      "from_address": "#{state.from_address}",
+      "subject": "#{state.subject}",
       "content": "#{ansidata}",
-      "from_name": "#{Node.self}",
-      "project": "Spells",
-      "tags": []
+      "from_name": "#{state.from_name}",
+      "project": "#{state.project}",
+      "tags": #{inspect state.tags}
     })
     
     {:ok, status_code, _resp_headers, client_ref} =
